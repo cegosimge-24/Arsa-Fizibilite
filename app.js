@@ -1,33 +1,29 @@
-let map, marker;
-function initMap(){ map=L.map('map').setView([41.0082,28.9784],10); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap katkıcıları'}).addTo(map); }
-function analyze(){
- const d=document.getElementById('district').value,n=document.getElementById('neighborhood').value||'—',b=document.getElementById('block').value||'—',p=document.getElementById('parcel').value||'—';
- // Demo dataset: real TKGM/belediye connectors will replace these values.
- const demo={area:600,taks:.30,emsal:1.50,floors:5,func:'Konut Alanı',order:'Ayrık Nizam'};
- const emsal=demo.area*demo.emsal, taban=demo.area*demo.taks;
- document.getElementById('loc').textContent=d+' / '+n;
- document.getElementById('ap').textContent=b+' / '+p;
- document.getElementById('area').textContent=demo.area.toLocaleString('tr-TR')+' m²';
- document.getElementById('zoning').innerHTML=`<p><b>Fonksiyon:</b> ${demo.func}</p><p><b>Nizam:</b> ${demo.order}</p><p><b>TAKS:</b> ${demo.taks}</p><p><b>Emsal/KAKS:</b> ${demo.emsal}</p><p><b>Kat:</b> ${demo.floors}</p><p><b>Teorik taban:</b> ${taban} m²</p><p><b>Emsale esas teorik alan:</b> ${emsal} m²</p>`;
- const sizes=[70,80,90,100,110,120];
- document.getElementById('scenarios').innerHTML=sizes.map(s=>`<tr><td>${s<=80?'1+1 / küçük':s<=100?'2+1':'3+1'}</td><td>${s} m²</td><td><b>${Math.floor(emsal/s)}</b></td></tr>`).join('');
- document.getElementById('calc').innerHTML=`<p><b>Teorik emsale esas alan:</b> ${emsal.toLocaleString('tr-TR')} m²</p><p><b>Teorik taban alanı:</b> ${taban.toLocaleString('tr-TR')} m²</p><p class="ok">Sonraki sürüm: gerçek parsel + belediye e-imar + plan notu + bölgesel m² verisi bağlantıları.</p>`;
- document.getElementById('src-tkgm').textContent='Gerçek servis bağlantısı bekliyor';
-document.getElementById('src-ibb').textContent='İBB plan kaynağı hazır, parsel eşleştirme bekliyor';
-document.getElementById('src-bel').textContent=d+' Belediyesi kaynağı eşleştirme bekliyor';
-document.getElementById('result').classList.remove('hidden'); if(!map){initMap();} setTimeout(()=>map.invalidateSize(),100);
+const CONFIG={API_BASE:localStorage.getItem('PARSEL_API_BASE')||''};
+let current=null;
+function setStatus(t,c=''){const e=document.getElementById('status');e.textContent=t;e.className=c}
+async function lookup(){
+ const q={district:district.value,neighborhood:neighborhood.value.trim(),block:block.value.trim(),parcel:parcel.value.trim()};
+ if(!q.neighborhood||!q.block||!q.parcel){setStatus('Mahalle, ada ve parsel zorunlu.','err');return}
+ setStatus('Resmî veri kaynağından sorgulanıyor...');
+ document.getElementById('result').classList.add('hidden');
+ if(!CONFIG.API_BASE){setStatus('Gerçek veri sunucusu henüz bağlanmadı. Demo veri kullanılmıyor. API adresini ayarlayın.','err');return}
+ try{
+  const r=await fetch(CONFIG.API_BASE+'/api/parcel/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)});
+  if(!r.ok) throw new Error('Sunucu '+r.status);
+  current=await r.json(); render(current); setStatus('Parsel bulundu ve analiz verileri alındı.','ok');
+ }catch(e){setStatus('Gerçek veri alınamadı: '+e.message,'err')}
 }
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-
-function runFinance(){
- const emsal=600*1.5;
- const land=Number(document.getElementById('landPrice').value)||0;
- const build=Number(document.getElementById('buildCost').value)||0;
- const sale=Number(document.getElementById('salePrice').value)||0;
- const buildTotal=emsal*build, revenue=emsal*sale, profit=revenue-buildTotal-land;
- document.getElementById('finance').innerHTML=`<hr><p><b>Teorik proje alanı:</b> ${emsal.toLocaleString('tr-TR')} m²</p>
- <p><b>Tahmini inşaat:</b> ${buildTotal.toLocaleString('tr-TR')} TL</p>
- <p><b>Tahmini satış geliri:</b> ${revenue.toLocaleString('tr-TR')} TL</p>
- <p><b>Arsa + inşaat sonrası fark:</b> <strong>${profit.toLocaleString('tr-TR')} TL</strong></p>
- <p class="warning">Bu finans hesabı yalnızca girilen varsayımlarla yapılır; finansman, vergi, ruhsat/proje, ortak alan, satış giderleri ve plan kaynaklı alan kayıpları ayrıca eklenmelidir.</p>`;
+function render(x){
+ document.getElementById('result').classList.remove('hidden');
+ const p=x.parcel||{},z=x.zoning||{};
+ document.getElementById('parcelData').innerHTML=`<p><b>${p.district||'-'} / ${p.neighborhood||'-'}</b></p><p>Ada / Parsel: <b>${p.block||'-'} / ${p.parcel||'-'}</b></p><p>Alan: <b>${p.area_m2??'-'} m²</b></p><div class="source">Kaynak: ${p.source||'-'} | Kontrol: ${p.checked_at||'-'}</div>`;
+ document.getElementById('zoningData').innerHTML=`<p>Fonksiyon: <b>${z.function||'-'}</b></p><p>Emsal/KAKS: <b>${z.emsal??'-'}</b></p><p>TAKS: <b>${z.taks??'-'}</b></p><p>Kat/Hmax: <b>${z.floors??'-'} / ${z.hmax??'-'}</b></p><p>Nizam: <b>${z.order||'-'}</b></p><div class="source">Kaynak: ${z.source||'-'} | Plan: ${z.plan_name||'-'}</div>`;
+ document.getElementById('notes').innerHTML=(x.plan_notes||[]).map(n=>`<p>${n}</p>`).join('')||'Plan notu alınamadı.';
+}
+function calculate(){
+ if(!current?.parcel?.area_m2||current?.zoning?.emsal){document.getElementById('finance').innerHTML='<p class="warn">Gerçek parsel ve emsal verisi olmadan hesap yapılmaz.</p>';return}
+ const a=Number(current.parcel.area_m2),e=Number(current.zoning.emsal),m=Number(apt.value)||90;
+ const emsal=a*e,n=Math.floor(emsal/m),landv=Number(land.value)||0,costv=Number(cost.value)||0,salev=Number(sale.value)||0;
+ const cost=emsal*costv,revenue=emsal*salev,profit=revenue-cost-landv;
+ document.getElementById('finance').innerHTML=`<p>Emsale esas teorik alan: <b>${emsal.toLocaleString('tr-TR')} m²</b></p><p>${m} m² ortalama daire: <b>${n} adet</b> (ön fizibilite)</p><p>İnşaat: <b>${cost.toLocaleString('tr-TR')} TL</b></p><p>Satış: <b>${revenue.toLocaleString('tr-TR')} TL</b></p><p>Tahmini fark: <b>${profit.toLocaleString('tr-TR')} TL</b></p><p class="warn">Kesin bağımsız bölüm sayısı değildir; çekmeler, otopark, ortak alan, emsal dışı alanlar ve plan notları ayrıca uygulanmalıdır.</p>`;
 }
