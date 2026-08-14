@@ -1,12 +1,12 @@
 const API=localStorage.getItem('BELEDIYE_API')||'';
 let current=null;
 const officialLinks={
- Sancaktepe:'https://www.turkiye.gov.tr/sancaktepe-belediyesi-imar-durum-sorgulama'
+ Sancaktepe:'https://webgis.sancaktepe.bel.tr/keos/?dsfilter=objectid=28472&tablename=nobetci_eczane.REHBER.nobetci_eczane&guestlogin=true'
 };
 function setStatus(text,cls=''){const e=document.getElementById('status');e.textContent=text;e.className=cls}
 function openOfficial(){
  const d=document.getElementById('district').value;
- window.open(officialLinks[d]||'https://www.turkiye.gov.tr/arama?aranan=imar%20durum%20bilgisi%20sorgulama','_blank','noopener');
+ window.open(officialLinks[d]||'https://webgis.sancaktepe.bel.tr/keos/?dsfilter=objectid=28472&tablename=nobetci_eczane.REHBER.nobetci_eczane&guestlogin=true','_blank','noopener');
 }
 async function lookup(){
  const q={district:district.value,neighborhood:neighborhood.value.trim(),block:block.value.trim(),parcel:parcel.value.trim()};
