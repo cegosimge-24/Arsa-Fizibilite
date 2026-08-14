@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parsel Fizibilite</title><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></head>
+<body>
+<header><div><b>PARSEL FİZİBİLİTE</b><span>Emlakçı & Müteahhit İçin Arsa Analizi</span></div></header>
+<main>
+<section class="card hero"><h1>Arsanı analiz et</h1><p>İstanbul Anadolu Yakası için ada/parsel üzerinden ön fizibilite.</p>
+<div class="grid">
+<label>İlçe<select id="district"><option>Sancaktepe</option><option>Üsküdar</option><option>Çekmeköy</option><option>Maltepe</option><option>Kartal</option><option>Pendik</option></select></label>
+<label>Mahalle<input id="neighborhood" placeholder="Örn. Atatürk"></label>
+<label>Ada<input id="block" placeholder="Örn. 447"></label>
+<label>Parsel<input id="parcel" placeholder="Örn. 1"></label>
+</div><button onclick="analyze()">PARSELİ ANALİZ ET</button>
+</section>
+<section id="result" class="hidden"><div class="card"><h2>Parsel Haritası</h2><div id="map"></div><p class="source-note">Harita katmanı prototiptir. Gerçek parsel geometrisi, yetkili TKGM/MEGSİS servis bağlantısı sağlandığında otomatik çizilecektir.</p></div>
+<div class="card"><h2>Parsel Özeti</h2><div class="stats"><div><small>Konum</small><b id="loc">-</b></div><div><small>Ada / Parsel</small><b id="ap">-</b></div><div><small>Parsel Alanı</small><b id="area">-</b></div></div></div>
+<div class="grid two">
+<div class="card"><h2>İmar Özeti</h2><div id="zoning"></div>
+<div class="source-box"><b>Resmî kaynak durumu</b>
+<div>TKGM / Parsel: <span id="src-tkgm">Bağlantı bekliyor</span></div>
+<div>İBB / İmar Planı: <span id="src-ibb">Kaynak eşleştirme bekliyor</span></div>
+<div>İlçe Belediyesi / E-İmar: <span id="src-bel">Kaynak eşleştirme bekliyor</span></div></div><p class="warning">Bu ekran ön fizibilitedir. Kesin yapılaşma koşulları ilgili belediyeden ve güncel plan notlarından teyit edilmelidir.</p></div>
+<div class="card"><h2>Daire Senaryoları</h2><table><thead><tr><th>Daire</th><th>Ort. brüt</th><th>Tahmini adet</th></tr></thead><tbody id="scenarios"></tbody></table></div>
+</div>
+<div class="card"><h2>Hesap ve Fizibilite</h2><div id="calc"></div>
+<div class="finance-grid">
+<label>Arsa fiyatı (TL)<input id="landPrice" type="number" placeholder="Örn. 20000000"></label>
+<label>İnşaat maliyeti (TL/m²)<input id="buildCost" type="number" placeholder="Örn. 35000"></label>
+<label>Satış fiyatı (TL/m²)<input id="salePrice" type="number" placeholder="Örn. 70000"></label>
+</div><button onclick="runFinance()">FİZİBİLİTEYİ HESAPLA</button><div id="finance"></div></div>
+</section>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="app.js"></script></body></html>
