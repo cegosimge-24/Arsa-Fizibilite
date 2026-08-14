@@ -1,25 +1,12 @@
-# Parsel Fizibilite
-İstanbul Anadolu Yakası için PWA ön fizibilite prototipi.
+# Belediye İmar Fizibilite V7
 
-## Mevcut
-- Ada/parsel giriş ekranı
-- İlçe/mahalle girişi
-- İmar özeti
-- TAKS/emsal teorik hesap
-- Daire m² senaryoları
-- Mobil uyumlu PWA
+Bu sürüm TKGM kullanmaz. Hedef veri kaynakları yalnızca:
+- İlçe belediyesi E-İmar
+- Belediyenin yayımladığı imar planları ve plan notları
 
-## Sonraki teknik katman
-1. TKGM/MEGSİS uygun servis entegrasyonu
-2. İBB ve ilçe belediyesi imar kaynakları
-3. Plan notu parser/AI analizi
-4. Harita ve parsel geometrisi
-5. Bölgesel konut m² veri katmanı
-6. Maliyet/satış/kat karşılığı fizibilitesi
-7. PDF rapor
+İlk test:
+Sancaktepe / Sarıgazi / 702 / 1
 
-## V3
-- Normalize edilmiş parsel/imar veri modeli
-- Modüler fizibilite motoru
-- TKGM / İBB / belediye adaptör sözleşmesi
-- Kaynak ve kontrol tarihi takibi
+Önemli: E-İmar servisi dışarıya açık bir API sunmuyorsa frontend bunu aşmaya çalışmaz. Backend, belediyenin izin verdiği açık/resmî veri veya kullanıcı tarafından sağlanan belge üzerinden çalışmalıdır.
+
+Sancaktepe Belediyesi'nin e-Devlet'te İmar Durum Bilgisi Sorgulama hizmeti bulunmaktadır.
